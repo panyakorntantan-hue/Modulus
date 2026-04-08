@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/clang++
 CXX_DEFINES = -DMODULUS_EXPORTS
 
-CXX_INCLUDES = -I"/Users/joshuahal/Developer/Autodesk/ObjectARX 2027/inc" -I"/Users/joshuahal/Developer/Autodesk/ObjectARX 2027/inc-arm64"
+CXX_INCLUDES = -I"/Users/joshuahal/Developer/Autodesk/ObjectARX 2027/inc"
 
 CXX_FLAGSarm64 = -g -std=gnu++17 -arch arm64 -fPIC
 

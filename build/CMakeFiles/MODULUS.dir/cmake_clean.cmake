@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "./bin.bundle/Contents/MacOS/./bin"
-  "./bin.bundle/Contents/MacOS/./bin.pdb"
+  "/Users/joshuahal/Documents/Modulus/bin/MyExtension.bundle/Contents/MacOS/MyExtension"
+  "/Users/joshuahal/Documents/Modulus/bin/MyExtension.bundle/Contents/MacOS/MyExtension.pdb"
   "CMakeFiles/MODULUS.dir/src/main.cpp.o"
   "CMakeFiles/MODULUS.dir/src/main.cpp.o.d"
 )

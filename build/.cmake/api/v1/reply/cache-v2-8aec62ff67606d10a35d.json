@@ -1170,18 +1170,6 @@
 			"value" : "FALSE"
 		},
 		{
-			"name" : "MODULUS_LIB_DEPENDS",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Dependencies for the target"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "general;-framework Cocoa;general;acge;general;accore;general;acdb;"
-		},
-		{
 			"name" : "MyArxExtension_BINARY_DIR",
 			"properties" : 
 			[

@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "./bin.bundle/Contents/MacOS/./bin"
+			"path" : "/Users/joshuahal/Documents/Modulus/bin/MyExtension.bundle/Contents/MacOS/MyExtension"
 		}
 	],
 	"backtrace" : 1,
@@ -13,7 +13,7 @@
 			"add_library",
 			"target_link_directories",
 			"target_link_libraries",
-			"include_directories"
+			"target_include_directories"
 		],
 		"files" : 
 		[
@@ -27,25 +27,25 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 18,
+				"line" : 15,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 27,
+				"line" : 35,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 28,
+				"line" : 37,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 12,
+				"line" : 19,
 				"parent" : 0
 			}
 		]
@@ -75,10 +75,6 @@
 				{
 					"backtrace" : 4,
 					"path" : "/Users/joshuahal/Developer/Autodesk/ObjectARX 2027/inc"
-				},
-				{
-					"backtrace" : 4,
-					"path" : "/Users/joshuahal/Developer/Autodesk/ObjectARX 2027/inc-arm64"
 				}
 			],
 			"language" : "CXX",
@@ -97,25 +93,6 @@
 		}
 	],
 	"id" : "MODULUS::@6890427a1f51a3e7e1df",
-	"interfaceLinkLibraries" : 
-	[
-		{
-			"backtrace" : 3,
-			"fragment" : "-framework Cocoa"
-		},
-		{
-			"backtrace" : 3,
-			"fragment" : "acge"
-		},
-		{
-			"backtrace" : 3,
-			"fragment" : "accore"
-		},
-		{
-			"backtrace" : 3,
-			"fragment" : "acdb"
-		}
-	],
 	"link" : 
 	{
 		"commandFragments" : 
@@ -140,17 +117,17 @@
 			},
 			{
 				"backtrace" : 3,
+				"fragment" : "-lacdb",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
 				"fragment" : "-lacge",
 				"role" : "libraries"
 			},
 			{
 				"backtrace" : 3,
 				"fragment" : "-laccore",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 3,
-				"fragment" : "-lacdb",
 				"role" : "libraries"
 			}
 		],
@@ -164,19 +141,19 @@
 		},
 		{
 			"backtrace" : 3,
+			"fragment" : "acdb"
+		},
+		{
+			"backtrace" : 3,
 			"fragment" : "acge"
 		},
 		{
 			"backtrace" : 3,
 			"fragment" : "accore"
-		},
-		{
-			"backtrace" : 3,
-			"fragment" : "acdb"
 		}
 	],
 	"name" : "MODULUS",
-	"nameOnDisk" : "./bin.bundle/Contents/MacOS/./bin",
+	"nameOnDisk" : "MyExtension.bundle/Contents/MacOS/MyExtension",
 	"paths" : 
 	{
 		"build" : ".",
