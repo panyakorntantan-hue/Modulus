@@ -25,7 +25,6 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/opt/homebrew/share/cmake/Modules/Internal/CMakeCommonLinkerInformation.cmake"
   "/opt/homebrew/share/cmake/Modules/Linker/AppleClang-CXX.cmake"
   "/opt/homebrew/share/cmake/Modules/Linker/AppleClang.cmake"
-  "/opt/homebrew/share/cmake/Modules/MacOSXBundleInfo.plist.in"
   "/opt/homebrew/share/cmake/Modules/Platform/Apple-AppleClang-CXX.cmake"
   "/opt/homebrew/share/cmake/Modules/Platform/Apple-Clang-CXX.cmake"
   "/opt/homebrew/share/cmake/Modules/Platform/Apple-Clang.cmake"
@@ -45,7 +44,6 @@ set(CMAKE_MAKEFILE_OUTPUTS
 # Byproducts of CMake generate step:
 set(CMAKE_MAKEFILE_PRODUCTS
   "/Users/joshuahal/Documents/Modulus/bin/MyExtension.bundle/Contents/MacOS"
-  "/Users/joshuahal/Documents/Modulus/bin/MyExtension.bundle/Contents/Info.plist"
   "/Users/joshuahal/Documents/Modulus/bin/MyExtension.bundle/Contents/Info.plist"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   )

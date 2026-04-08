@@ -4,9 +4,9 @@
 # compile CXX with /usr/bin/clang++
 CXX_DEFINES = -DMODULUS_EXPORTS
 
-CXX_INCLUDES = -I"/Users/joshuahal/Developer/Autodesk/ObjectARX 2027/inc"
+CXX_INCLUDES = -I"/Users/joshuahal/Developer/Autodesk/ObjectARX 2027/inc" -I"/Users/joshuahal/Developer/Autodesk/ObjectARX 2027/inc/PAL/api"
 
-CXX_FLAGSarm64 = -g -std=gnu++17 -arch arm64 -fPIC
+CXX_FLAGSarm64 = -g -std=gnu++17 -arch arm64 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden
 
-CXX_FLAGS = -g -std=gnu++17 -arch arm64 -fPIC
+CXX_FLAGS = -g -std=gnu++17 -arch arm64 -fPIC -fvisibility=hidden -fvisibility-inlines-hidden
 
