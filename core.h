@@ -172,6 +172,13 @@ struct GridNode {
         return x == other.x && y == other.y && z == other.z;
     }
     
+    // ADD THIS: Required for priority_queue comparison
+    bool operator<(const GridNode& other) const {
+        if (x != other.x) return x < other.x;
+        if (y != other.y) return y < other.y;
+        return z < other.z;
+    }
+    
     int hash() const {
         return x * 10007 ^ y * 10009 ^ z * 10037;
     }

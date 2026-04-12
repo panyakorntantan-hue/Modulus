@@ -3,14 +3,25 @@
 #include <sstream>
 #include <iomanip>
 
-// ObjectARX headers (from provided library list)
+// ObjectARX headers
 #include "acdb.h"
 #include "dbents.h"
 #include "dbsymtb.h"
 #include "acedads.h"
-#include "acgedefs.h"
+#include "acutmem.h"
 
 namespace ModulusLite {
+
+// ============================================================================
+// HELPER: Convert std::string to ACHAR (wchar_t)
+// ============================================================================
+
+static ACHAR* stringToAchar(const std::string& str) {
+    size_t len = str.size() + 1;
+    ACHAR* result = new ACHAR[len];
+    size_t converted = std::mbstowcs(result, str.c_str(), len);
+    return result;
+}
 
 // ============================================================================
 // CAD ADAPTER IMPLEMENTATION
@@ -24,14 +35,19 @@ bool CADAdapter::initialize() {
 bool CADAdapter::drawMachine(const Machine& machine) {
     if (!m_pDb) return false;
     
-    // Get model space
+    // Get block table
     AcDbBlockTable* pBlkTable;
     if (acdbOpenObject(pBlkTable, m_pDb->blockTableId(), AcDb::kForRead) != Acad::eOk) {
         return false;
     }
     
+    // Get model space record ID
+    AcDbObjectId msId;
+    pBlkTable->getAt(ACDB_MODEL_SPACE, msId);
+    
+    // Open model space for write
     AcDbBlockTableRecord* pMs;
-    if (acdbOpenObject(pMs, pBlkTable->modelSpaceId(), AcDb::kForWrite) != Acad::eOk) {
+    if (acdbOpenObject(pMs, msId, AcDb::kForWrite) != Acad::eOk) {
         pBlkTable->close();
         return false;
     }
@@ -43,35 +59,23 @@ bool CADAdapter::drawMachine(const Machine& machine) {
     AcGePoint3d pos(machine.position.x, machine.position.y, machine.position.z);
     pRef->setPosition(pos);
     
-    // Try to set the block definition from library
-    // machine.modelPath contains the block name (e.g., "PUMP_CENTRIFUGAL")
-    if (!machine.modelPath.empty()) {
-        AcDbObjectId blockId;
-        Acad::ErrorStatus es = pBlkTable->getAt(machine.modelPath.c_str(), blockId);
-        
-        if (es == Acad::eOk) {
-            // Block exists in DWG, reference it
-            pRef->setBlockTableRecord(blockId);
-        } else {
-            // Block not found in DWG, insert from external file
-            // Try to load from library storage
-            std::string blockPath = getBlockFromLibrary(machine.modelPath);
-            if (!blockPath.empty() && insertBlockFromFile(blockPath, machine.modelPath, pBlkTable)) {
-                pBlkTable->getAt(machine.modelPath.c_str(), blockId);
-                pRef->setBlockTableRecord(blockId);
-            } else {
-                // Fallback: use a placeholder block
-                acutPrintf(_T("WARNING: Block %s not found; using placeholder\n"), 
-                    machine.modelPath.c_str());
-                pBlkTable->getAt("PLACEHOLDER_MACHINE", blockId);
-                pRef->setBlockTableRecord(blockId);
-            }
-        }
-    }
-    
     // Set scale
     AcGeScale3d scale(1.0, 1.0, 1.0);
     pRef->setScaleFactors(scale);
+    
+    // Try to reference block from DWG
+    if (!machine.modelPath.empty()) {
+        AcDbObjectId blockId;
+        ACHAR* blockNameW = stringToAchar(machine.modelPath);
+        
+        Acad::ErrorStatus es = pBlkTable->getAt(blockNameW, blockId);
+        if (es == Acad::eOk) {
+            pRef->setBlockTableRecord(blockId);
+        }
+        // Fallback: invisible reference if block not found
+        
+        delete[] blockNameW;
+    }
     
     // Add to model space
     AcDbObjectId refId;
@@ -87,28 +91,28 @@ bool CADAdapter::drawMachine(const Machine& machine) {
 bool CADAdapter::drawPipe(const Pipe& pipe) {
     if (!m_pDb || pipe.path.empty()) return false;
     
-    // Get model space
+    // Get block table and model space
     AcDbBlockTable* pBlkTable;
     if (acdbOpenObject(pBlkTable, m_pDb->blockTableId(), AcDb::kForRead) != Acad::eOk) {
         return false;
     }
     
+    AcDbObjectId msId;
+    pBlkTable->getAt(ACDB_MODEL_SPACE, msId);
+    
     AcDbBlockTableRecord* pMs;
-    if (acdbOpenObject(pMs, pBlkTable->modelSpaceId(), AcDb::kForWrite) != Acad::eOk) {
+    if (acdbOpenObject(pMs, msId, AcDb::kForWrite) != Acad::eOk) {
         pBlkTable->close();
         return false;
     }
     
     // Create 3D polyline
-    AcDb3dPolyline* pPoly = new AcDb3dPolyline(AcDb::k3dSimplePoly);
-    
-    // Add vertices
+    AcGePoint3dArray vertices;
     for (const auto& pt : pipe.path) {
-        AcGePoint3d acPt(pt.x, pt.y, pt.z);
-        AcDb3dPolylineVertex* pVertex = new AcDb3dPolylineVertex(acPt);
-        pPoly->appendVertex(pVertex);
-        pVertex->close();
+        vertices.append(AcGePoint3d(pt.x, pt.y, pt.z));
     }
+    
+    AcDb3dPolyline* pPoly = new AcDb3dPolyline(AcDb::k3dSimplePoly, vertices);
     
     // Set color by material
     colorByMaterial(pPoly, pipe.material);
@@ -139,8 +143,11 @@ bool CADAdapter::drawFlowArrow(const Point3D& position, const Point3D& direction
         return false;
     }
     
+    AcDbObjectId msId;
+    pBlkTable->getAt(ACDB_MODEL_SPACE, msId);
+    
     AcDbBlockTableRecord* pMs;
-    if (acdbOpenObject(pMs, pBlkTable->modelSpaceId(), AcDb::kForWrite) != Acad::eOk) {
+    if (acdbOpenObject(pMs, msId, AcDb::kForWrite) != Acad::eOk) {
         pBlkTable->close();
         return false;
     }
@@ -193,8 +200,11 @@ bool CADAdapter::drawPipeTag(const Pipe& pipe) {
         return false;
     }
     
+    AcDbObjectId msId;
+    pBlkTable->getAt(ACDB_MODEL_SPACE, msId);
+    
     AcDbBlockTableRecord* pMs;
-    if (acdbOpenObject(pMs, pBlkTable->modelSpaceId(), AcDb::kForWrite) != Acad::eOk) {
+    if (acdbOpenObject(pMs, msId, AcDb::kForWrite) != Acad::eOk) {
         pBlkTable->close();
         return false;
     }
@@ -205,7 +215,11 @@ bool CADAdapter::drawPipeTag(const Pipe& pipe) {
     AcGePoint3d tagPos(midpoint.x, midpoint.y, midpoint.z + 0.3);
     pMText->setLocation(tagPos);
     pMText->setTextHeight(0.25);
-    pMText->setContents(pipe.tag.c_str());
+    
+    // Convert tag to ACHAR
+    ACHAR* tagW = stringToAchar(pipe.tag);
+    pMText->setContents(tagW);
+    delete[] tagW;
     
     AcDbObjectId textId;
     Acad::ErrorStatus es = pMs->appendAcDbEntity(textId, pMText);
@@ -230,8 +244,11 @@ bool CADAdapter::drawMachineLabel(const Machine& machine) {
         return false;
     }
     
+    AcDbObjectId msId;
+    pBlkTable->getAt(ACDB_MODEL_SPACE, msId);
+    
     AcDbBlockTableRecord* pMs;
-    if (acdbOpenObject(pMs, pBlkTable->modelSpaceId(), AcDb::kForWrite) != Acad::eOk) {
+    if (acdbOpenObject(pMs, msId, AcDb::kForWrite) != Acad::eOk) {
         pBlkTable->close();
         return false;
     }
@@ -243,7 +260,11 @@ bool CADAdapter::drawMachineLabel(const Machine& machine) {
     AcGePoint3d pos(labelPos.x, labelPos.y, labelPos.z);
     pLabel->setLocation(pos);
     pLabel->setTextHeight(0.3);
-    pLabel->setContents(label.str().c_str());
+    
+    // Convert to ACHAR
+    ACHAR* labelW = stringToAchar(label.str());
+    pLabel->setContents(labelW);
+    delete[] labelW;
     
     AcDbObjectId labelId;
     Acad::ErrorStatus es = pMs->appendAcDbEntity(labelId, pLabel);
@@ -264,8 +285,11 @@ bool CADAdapter::drawLegend() {
         return false;
     }
     
+    AcDbObjectId msId;
+    pBlkTable->getAt(ACDB_MODEL_SPACE, msId);
+    
     AcDbBlockTableRecord* pMs;
-    if (acdbOpenObject(pMs, pBlkTable->modelSpaceId(), AcDb::kForWrite) != Acad::eOk) {
+    if (acdbOpenObject(pMs, msId, AcDb::kForWrite) != Acad::eOk) {
         pBlkTable->close();
         return false;
     }
@@ -286,7 +310,11 @@ bool CADAdapter::drawLegend() {
     AcGePoint3d legendPos(1.0, 1.0, 0.0);
     pLegend->setLocation(legendPos);
     pLegend->setTextHeight(0.2);
-    pLegend->setContents(legendText.c_str());
+    
+    // Convert to ACHAR
+    ACHAR* legendW = stringToAchar(legendText);
+    pLegend->setContents(legendW);
+    delete[] legendW;
     
     AcDbObjectId legendId;
     Acad::ErrorStatus es = pMs->appendAcDbEntity(legendId, pLegend);
@@ -311,25 +339,25 @@ int CADAdapter::getColorIndex(MaterialType material) {
     switch (material) {
         case MaterialType::Liquid: return 5;  // Cyan/Blue
         case MaterialType::Gas:    return 2;  // Yellow
-        case MaterialType::Solid:  return 30; // Brown (true color)
+        case MaterialType::Solid:  return 30; // Brown
         case MaterialType::Sludge: return 8;  // Gray
-        default: return 256;  // Bylayer
+        default: return 256;
     }
 }
 
 void CADAdapter::setLineweightByDiameter(AcDbEntity* pEnt, double diameter) {
     if (!pEnt) return;
     
-    // Map diameter to lineweight (in 0.01 mm units)
+    // Map diameter to lineweight
     AcDb::LineWeight lw;
     if (diameter < 0.1) {
-        lw = AcDb::kLnWt013;  // 0.13 mm
+        lw = AcDb::kLnWt013;
     } else if (diameter < 0.2) {
-        lw = AcDb::kLnWt025;  // 0.25 mm
+        lw = AcDb::kLnWt025;
     } else if (diameter < 0.3) {
-        lw = AcDb::kLnWt035;  // 0.35 mm
+        lw = AcDb::kLnWt035;
     } else {
-        lw = AcDb::kLnWt050;  // 0.50 mm
+        lw = AcDb::kLnWt050;
     }
     
     pEnt->setLineWeight(lw);
@@ -367,7 +395,7 @@ bool Pipeline::executeLayout(std::vector<Machine>& machines) {
 
 bool Pipeline::executeRouting(std::vector<Machine>& machines, std::vector<Pipe>& pipes) {
     for (auto& pipe : pipes) {
-        // Find from and to machines
+        // Find machines
         Machine* pFrom = nullptr;
         Machine* pTo = nullptr;
         

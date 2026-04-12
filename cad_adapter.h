@@ -14,6 +14,7 @@ class AcDbMText;
 class AcDbBlockReference;
 class AcDbLinetype;
 class AcDbArrow;
+class AcDbEntity;
 
 namespace ModulusLite {
 
