@@ -64,10 +64,11 @@ bool ModulusLitePlugin::initialize() {
     setupSampleData();
     
     // Create UI panel (note: Qt integration requires additional setup)
-    // m_pUIPanel = new UIPanel();
-    // m_pUIPanel->setMachines(&m_machines);
-    // m_pUIPanel->setPipes(&m_pipes);
-    // m_pUIPanel->setPipeline(m_pPipeline);
+    m_pUIPanel = new UIPanel();
+    m_pUIPanel->setMachines(&m_machines);
+    m_pUIPanel->setPipes(&m_pipes);
+    m_pUIPanel->setPipeline(m_pPipeline);
+    m_pUIPanel->show();
     
     return true;
 }
