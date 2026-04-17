@@ -95,7 +95,7 @@ if (pipeline.execute(machines, pipes)) {
 
 ---
 
-### 3. **ui_panel.h / ui_panel.cpp** (~250 lines total)
+### 3. **panel.h / panel.cpp** (~250 lines total)
 **Qt5 dockable UI panel**
 
 **Features:**
@@ -438,7 +438,7 @@ Select pipe in UI panel
 
 **Need to modify A* grid?** → Edit `ManhattanRouter` constants in `core.h`
 
-**Need to add UI controls?** → Edit `ui_panel.h/cpp`
+**Need to add UI controls?** → Edit `panel.h/cpp`
 
 **Need to register new commands?** → Edit `plugin_main.cpp`
 

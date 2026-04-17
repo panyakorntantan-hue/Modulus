@@ -519,29 +519,29 @@ tests/test_routing.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ModulusLiteTests.dir/build.make CMakeFiles/ModulusLiteTests.dir/tests/test_routing.cpp.s
 .PHONY : tests/test_routing.cpp.s
 
-ui_panel.o: ui_panel.cpp.o
-.PHONY : ui_panel.o
+panel.o: panel.cpp.o
+.PHONY : panel.o
 
 # target to build an object file
-ui_panel.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ModulusLiteUI.dir/build.make CMakeFiles/ModulusLiteUI.dir/ui_panel.cpp.o
-.PHONY : ui_panel.cpp.o
+panel.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ModulusLiteUI.dir/build.make CMakeFiles/ModulusLiteUI.dir/panel.cpp.o
+.PHONY : panel.cpp.o
 
-ui_panel.i: ui_panel.cpp.i
-.PHONY : ui_panel.i
+panel.i: panel.cpp.i
+.PHONY : panel.i
 
 # target to preprocess a source file
-ui_panel.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ModulusLiteUI.dir/build.make CMakeFiles/ModulusLiteUI.dir/ui_panel.cpp.i
-.PHONY : ui_panel.cpp.i
+panel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ModulusLiteUI.dir/build.make CMakeFiles/ModulusLiteUI.dir/panel.cpp.i
+.PHONY : panel.cpp.i
 
-ui_panel.s: ui_panel.cpp.s
-.PHONY : ui_panel.s
+panel.s: panel.cpp.s
+.PHONY : panel.s
 
 # target to generate assembly for a file
-ui_panel.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ModulusLiteUI.dir/build.make CMakeFiles/ModulusLiteUI.dir/ui_panel.cpp.s
-.PHONY : ui_panel.cpp.s
+panel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ModulusLiteUI.dir/build.make CMakeFiles/ModulusLiteUI.dir/panel.cpp.s
+.PHONY : panel.cpp.s
 
 # Help Target
 help:
@@ -592,9 +592,9 @@ help:
 	@echo "... tests/test_routing.o"
 	@echo "... tests/test_routing.i"
 	@echo "... tests/test_routing.s"
-	@echo "... ui_panel.o"
-	@echo "... ui_panel.i"
-	@echo "... ui_panel.s"
+	@echo "... panel.o"
+	@echo "... panel.i"
+	@echo "... panel.s"
 .PHONY : help
 
 

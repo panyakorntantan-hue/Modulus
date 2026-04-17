@@ -3,21 +3,7 @@
 // Native MFC Docking Panel (Fixed + Stable)
 // ============================================================================
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-
-// Kill bad macros if leaking
-#undef BYTE
-#undef WORD
-#undef FAR
-#undef BOOLEAN
-
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <windows.h>
-
-// MFC AFTER
-#include <afxwin.h>
+#include "base.h"
 #include <afxext.h>
 
 // Other Windows

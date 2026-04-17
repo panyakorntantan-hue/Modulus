@@ -8,7 +8,7 @@ ModulusLite/
 ├── CMakeLists.txt              # Build config
 ├── core.h                       # Pure C++ algorithms
 ├── cad_adapter.h / .cpp         # ObjectARX integration
-├── ui_panel.h / .cpp            # Qt UI
+├── panel.h / .cpp            # Qt UI
 ├── plugin_main.cpp              # Entry point
 ├── tests/
 │   ├── test_core.cpp
@@ -441,7 +441,7 @@ Done! Plugin now supports foam pipes.
 For 10+ pipes, consider async routing:
 
 ```cpp
-// ui_panel.cpp
+// panel.cpp
 void UIPanel::onRoutePipes() {
     QThread* pThread = new QThread(this);
     RoutingWorker* pWorker = new RoutingWorker(machines, pipes);

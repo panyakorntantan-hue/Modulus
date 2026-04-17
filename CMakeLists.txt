@@ -7,38 +7,44 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Enable Qt auto tools
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON) # Added UIC in case you use .ui files
+set(CMAKE_AUTOUIC ON)
 
+# ============================================================================
+# GLOBAL COMPILER CONFIG (MSVC)
+# ============================================================================
 if(MSVC)
-    add_definitions(
-        /W4 /MP
-        -D_CRT_SECURE_NO_WARNINGS  # Silences mbstowcs warnings
-        -D_WINSOCK2API_
-        -D_UNICODE -DUNICODE
-        -D_AFXDLL
-        -D_AC25_
-        -D_WIN64
+    add_compile_definitions(
+        WIN32_LEAN_AND_MEAN
+        _WINSOCK2API_         
+        _WINSOCKAPI_          # Block Winsock 1.0 globally
+        NOMINMAX
+        _WIN32_WINNT=0x0A00   
+        _CRT_SECURE_NO_WARNINGS
+        _UNICODE 
+        UNICODE
+        _AFXDLL               
+        _AC25_                
+        _WIN64
     )
-    # Disable 4201 (nameless structs) for ObjectARX compatibility
-    add_compile_options(/wd4201) 
-    
-    # Keep /WX if you want high code quality, but maybe disable it 
-    # until you've cleared the initial conversion warnings.
-    # add_compile_options(/WX) 
+
+    add_compile_options(
+        /W4                   
+        /MP                   
+        /wd4201               
+    )
 endif()
 
 # ============================================================================
 # DEPENDENCIES
 # ============================================================================
-
 set(OBJECTARX_SDK_PATH "C:/CDROM1" CACHE PATH "Path to ObjectARX SDK")
 
-# Qt5 - Ensure this path points to the MSVC 64-bit version
+# Qt5
 list(APPEND CMAKE_PREFIX_PATH "C:/Users/admin/Downloads/Modulus-main/5.15.2/msvc2019_64")
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
 
 # ============================================================================
-# TARGETS
+# TARGET DEFINITIONS
 # ============================================================================
 
 # Core (Interface)
@@ -57,15 +63,27 @@ target_link_libraries(ModulusLiteCAD PUBLIC ModulusLiteCore)
 # UI Library
 add_library(ModulusLiteUI STATIC panel.cpp panel.h)
 target_link_libraries(ModulusLiteUI PUBLIC ModulusLiteCore Qt5::Widgets)
+    target_compile_options(ModulusLiteUI PRIVATE 
+        "/Dbyte=unsigned char"
+        "/DByte=unsigned char"
+        "/DWord=unsigned short"
+    )
+
+# ============================================================================
+# THE NUCLEAR FIX (Must come AFTER add_library)
+# ============================================================================
+if(MSVC)
+    # This prevents the 'Byte' conflict in in6addr.h for the UI library
+    target_compile_options(ModulusLiteUI PRIVATE "/Dbyte=unsigned char")
+    target_compile_definitions(ModulusLiteUI PRIVATE QT_NO_KEYWORDS)
+endif()
 
 # ============================================================================
 # PLUGIN (The actual .arx)
 # ============================================================================
-
-# Changed target name to match your install/property logic
 add_library(ModulusLitePlugin MODULE
     plugin_main.cpp
-    exports.def # Ensure this file contains 'acrxGetApiVersion' and 'acrxEntryPoint'
+    exports.def 
 )
 
 target_link_directories(ModulusLitePlugin PRIVATE 
@@ -76,7 +94,6 @@ target_link_libraries(ModulusLitePlugin PRIVATE
     ModulusLiteCore
     ModulusLiteCAD
     ModulusLiteUI
-    # Standard ARX libs (Check your SDK version, some need '25' suffix)
     accore.lib
     acad.lib
     acdb25.lib 
@@ -89,19 +106,13 @@ set_target_properties(ModulusLitePlugin PROPERTIES
     PREFIX ""
     SUFFIX ".arx"
     OUTPUT_NAME "ModulusLite"
-    LINK_FLAGS "${ARX_LINKER_FLAGS}"
 )
 
 # ============================================================================
 # POST-BUILD & INSTALL
 # ============================================================================
+install(TARGETS ModulusLitePlugin DESTINATION bin)
 
-install(TARGETS ModulusLitePlugin
-    LIBRARY DESTINATION bin
-    RUNTIME DESTINATION bin
-)
-
-# Copy to a convenient 'out' folder
 add_custom_command(TARGET ModulusLitePlugin POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:ModulusLitePlugin> ${CMAKE_BINARY_DIR}/bin/ModulusLite.arx

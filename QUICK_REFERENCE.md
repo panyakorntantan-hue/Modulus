@@ -7,8 +7,8 @@
 | `core.h` | ~500 | Pure C++ algorithms (FDG, A*, data structures) |
 | `cad_adapter.h` | ~60 | CAD adapter interface |
 | `cad_adapter.cpp` | ~350 | ObjectARX integration (drawing) |
-| `ui_panel.h` | ~50 | Qt UI panel interface |
-| `ui_panel.cpp` | ~200 | Qt UI implementation |
+| `panel.h` | ~50 | Qt UI panel interface |
+| `panel.cpp` | ~200 | Qt UI implementation |
 | `plugin_main.cpp` | ~200 | AutoCAD entry point & commands |
 | `CMakeLists.txt` | ~120 | Build configuration |
 | `tests/test_core.cpp` | ~350 | Unit tests (geometry, FDG, A*) |
@@ -276,7 +276,7 @@ acutPrintf(_T("Created %d entities\n"), entityCount);
 
 ### Add a New Button
 ```cpp
-// ui_panel.cpp, in setupUI()
+// panel.cpp, in setupUI()
 QPushButton* pBtnNew = new QPushButton("Export CSV", this);
 pBtnLayout->addWidget(pBtnNew);
 

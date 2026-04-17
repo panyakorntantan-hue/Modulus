@@ -20,7 +20,7 @@ A deterministic C++ plugin for AutoCAD (2027 Mac) that generates industrial pipi
 ModulusLite/
 ├── core.h                 # Pure C++: FDG, A*, data structures
 ├── cad_adapter.h/cpp      # ObjectARX integration: CAD drawing
-├── ui_panel.h/cpp         # Qt UI: dockable panel
+├── panel.h/cpp         # Qt UI: dockable panel
 ├── plugin_main.cpp        # Entry point & command handlers
 ├── CMakeLists.txt         # Build configuration
 ├── tests/
@@ -45,7 +45,7 @@ ObjectARX bindings for AutoCAD drawing.
 - `Pipeline`: Orchestrate layout → routing → drawing workflow
 - Methods: `drawMachine()`, `drawPipe()`, `drawFlowArrow()`, `drawPipeTag()`, `drawLegend()`
 
-#### 3. **UI Module** (`ui_panel.h/cpp`)
+#### 3. **UI Module** (`panel.h/cpp`)
 Qt-based dockable panel.
 - "Generate Layout" button → runs FDG
 - "Route Pipes" button → runs A* + drawing

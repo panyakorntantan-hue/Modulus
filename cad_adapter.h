@@ -1,8 +1,9 @@
 #pragma once
 
-#include "core.h"
+
 #include <vector>
 #include <string>
+#include "core.h"
 
 // Forward declarations for ObjectARX types
 class AcDbDatabase;

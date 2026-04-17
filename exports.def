@@ -1,4 +1,4 @@
-LIBRARY "YourProjectName.arx"
+LIBRARY "ModulusLite"
 EXPORTS
     acrxEntryPoint      PRIVATE
     acrxGetApiVersion   PRIVATE
