@@ -1,4 +1,4 @@
-#include "ui_panel.h"
+#include "panel.h"
 #include "cad_adapter.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>

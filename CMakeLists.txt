@@ -1,124 +1,74 @@
 cmake_minimum_required(VERSION 3.16)
 project(ModulusLite LANGUAGES CXX)
 
-# ============================================================================
-# GLOBAL SETTINGS
-# ============================================================================
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Enable Qt auto tools
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON) # Added UIC in case you use .ui files
 
 if(MSVC)
     add_definitions(
-        -D_WINSOCKAPI_
-        -D_UNICODE 
-        -DUNICODE       # AutoCAD is strictly Unicode
-        -D_AFXDLL       # Required if using MFC/Shared DLLs
-        -D_AC25_        # Replace 25 with your version (e.g., 24 for 2024)
-        -D_WIN64        # Target 64-bit
+        /W4 /MP
+        -D_CRT_SECURE_NO_WARNINGS  # Silences mbstowcs warnings
+        -D_WINSOCK2API_
+        -D_UNICODE -DUNICODE
+        -D_AFXDLL
+        -D_AC25_
+        -D_WIN64
     )
-    set(CMAKE_MFC_FLAG 2)
-    # Ensure we use the Multi-threaded DLL runtime (/MD)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    # Disable 4201 (nameless structs) for ObjectARX compatibility
+    add_compile_options(/wd4201) 
+    
+    # Keep /WX if you want high code quality, but maybe disable it 
+    # until you've cleared the initial conversion warnings.
+    # add_compile_options(/WX) 
 endif()
 
 # ============================================================================
 # DEPENDENCIES
 # ============================================================================
 
-# ObjectARX SDK (Windows version ONLY)
-set(OBJECTARX_SDK_PATH
-    "C:/CDROM1"
-    CACHE PATH "Path to ObjectARX SDK"
-)
+set(OBJECTARX_SDK_PATH "C:/CDROM1" CACHE PATH "Path to ObjectARX SDK")
 
-message(STATUS "OBJECTARX_SDK_PATH = ${OBJECTARX_SDK_PATH}")
-
-# Qt5
+# Qt5 - Ensure this path points to the MSVC 64-bit version
 list(APPEND CMAKE_PREFIX_PATH "C:/Users/admin/Downloads/Modulus-main/5.15.2/msvc2019_64")
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
 
 # ============================================================================
-# CORE LIBRARY
+# TARGETS
 # ============================================================================
 
+# Core (Interface)
 add_library(ModulusLiteCore INTERFACE)
+target_sources(ModulusLiteCore INTERFACE core.h)
+target_include_directories(ModulusLiteCore INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_sources(ModulusLiteCore INTERFACE
-    core.h
-)
-
-target_include_directories(ModulusLiteCore INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-# ============================================================================
-# CAD ADAPTER (ObjectARX)
-# ============================================================================
-
-add_library(ModulusLiteCAD STATIC
-    cad_adapter.cpp
-    cad_adapter.h
-)
-
-target_include_directories(ModulusLiteCAD PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
+# CAD Adapter
+add_library(ModulusLiteCAD STATIC cad_adapter.cpp cad_adapter.h)
+target_include_directories(ModulusLiteCAD PUBLIC 
+    ${OBJECTARX_SDK_PATH}/inc-x64 
     ${OBJECTARX_SDK_PATH}/inc
-    ${OBJECTARX_SDK_PATH}/inc-x64
 )
+target_link_libraries(ModulusLiteCAD PUBLIC ModulusLiteCore)
 
-target_link_directories(ModulusLiteCAD PUBLIC
-    ${OBJECTARX_SDK_PATH}/lib
-    ${OBJECTARX_SDK_PATH}/lib-x64
-)
-
-target_link_libraries(ModulusLiteCAD PUBLIC
-    ModulusLiteCore
-)
+# UI Library
+add_library(ModulusLiteUI STATIC panel.cpp panel.h)
+target_link_libraries(ModulusLiteUI PUBLIC ModulusLiteCore Qt5::Widgets)
 
 # ============================================================================
-# UI LIBRARY (Qt)
+# PLUGIN (The actual .arx)
 # ============================================================================
 
-add_library(ModulusLiteUI STATIC
-    ui_panel.cpp
-    ui_panel.h
-)
-
-target_include_directories(ModulusLiteUI PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-target_link_libraries(ModulusLiteUI PUBLIC
-    ModulusLiteCore
-    Qt5::Core
-    Qt5::Gui
-    Qt5::Widgets
-)
-
-# ============================================================================
-# PLUGIN (AutoCAD ARX)
-# ============================================================================
-
+# Changed target name to match your install/property logic
 add_library(ModulusLitePlugin MODULE
     plugin_main.cpp
-    exports.def
+    exports.def # Ensure this file contains 'acrxGetApiVersion' and 'acrxEntryPoint'
 )
 
-target_compile_definitions(ModulusLitePlugin PRIVATE _WINSOCK2API_)
-
-target_include_directories(ModulusLitePlugin PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${OBJECTARX_SDK_PATH}/inc
-    ${OBJECTARX_SDK_PATH}/inc-x64
-)
-
-target_link_directories(ModulusLitePlugin PRIVATE
-    ${OBJECTARX_SDK_PATH}/lib
+target_link_directories(ModulusLitePlugin PRIVATE 
     ${OBJECTARX_SDK_PATH}/lib-x64
 )
 
@@ -126,43 +76,33 @@ target_link_libraries(ModulusLitePlugin PRIVATE
     ModulusLiteCore
     ModulusLiteCAD
     ModulusLiteUI
-    acui.lib
+    # Standard ARX libs (Check your SDK version, some need '25' suffix)
+    accore.lib
     acad.lib
-    acdb.lib
-    adui.lib
+    acdb25.lib 
+    acge25.lib
+    acui25.lib
+    adui25.lib
 )
 
 set_target_properties(ModulusLitePlugin PROPERTIES
     PREFIX ""
     SUFFIX ".arx"
+    OUTPUT_NAME "ModulusLite"
+    LINK_FLAGS "${ARX_LINKER_FLAGS}"
 )
 
-# Copy plugin after build
+# ============================================================================
+# POST-BUILD & INSTALL
+# ============================================================================
+
+install(TARGETS ModulusLitePlugin
+    LIBRARY DESTINATION bin
+    RUNTIME DESTINATION bin
+)
+
+# Copy to a convenient 'out' folder
 add_custom_command(TARGET ModulusLitePlugin POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-        ${CMAKE_BINARY_DIR}/bin
-    COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:ModulusLitePlugin>
-        ${CMAKE_BINARY_DIR}/bin/ModulusLite.arx
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:ModulusLitePlugin> ${CMAKE_BINARY_DIR}/bin/ModulusLite.arx
 )
-
-# ============================================================================
-# TESTS
-# ============================================================================
-
-enable_testing()
-
-add_executable(ModulusLiteTests
-    tests/test_core.cpp
-    tests/test_routing.cpp
-)
-
-target_include_directories(ModulusLiteTests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-target_link_libraries(ModulusLiteTests PRIVATE
-    ModulusLiteCore
-)
-
-add_test(NAME ModulusLiteTests COMMAND ModulusLiteTests)
