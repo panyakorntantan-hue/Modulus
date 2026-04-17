@@ -14,13 +14,14 @@ set(CMAKE_AUTORCC ON)
 
 if(MSVC)
     add_definitions(
+        -D_WINSOCKAPI_
         -D_UNICODE 
         -DUNICODE       # AutoCAD is strictly Unicode
         -D_AFXDLL       # Required if using MFC/Shared DLLs
         -D_AC25_        # Replace 25 with your version (e.g., 24 for 2024)
         -D_WIN64        # Target 64-bit
     )
-    
+    set(CMAKE_MFC_FLAG 2)
     # Ensure we use the Multi-threaded DLL runtime (/MD)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
@@ -108,19 +109,27 @@ add_library(ModulusLitePlugin MODULE
     exports.def
 )
 
+target_compile_definitions(ModulusLitePlugin PRIVATE _WINSOCK2API_)
+
 target_include_directories(ModulusLitePlugin PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${OBJECTARX_SDK_PATH}/inc
+    ${OBJECTARX_SDK_PATH}/inc-x64
 )
 
 target_link_directories(ModulusLitePlugin PRIVATE
     ${OBJECTARX_SDK_PATH}/lib
+    ${OBJECTARX_SDK_PATH}/lib-x64
 )
 
 target_link_libraries(ModulusLitePlugin PRIVATE
     ModulusLiteCore
     ModulusLiteCAD
     ModulusLiteUI
+    acui.lib
+    acad.lib
+    acdb.lib
+    adui.lib
 )
 
 set_target_properties(ModulusLitePlugin PROPERTIES
